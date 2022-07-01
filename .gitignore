@@ -1,0 +1,7 @@
+*.pyc
+*.cpython-36.pyc
+.vscode
+build
+__pycache__
+install
+log

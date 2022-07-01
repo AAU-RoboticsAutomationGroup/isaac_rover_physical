@@ -1,0 +1,46 @@
+# Naming conventions:
+#
+# fl - front left  | fr - front right
+# cl - center left | cr - center right
+# rl - rear left   | rr - rear right
+
+# Pin numbers for motors on PWM board
+pin_drive_fl: 13
+pin_steer_fl: 14
+
+pin_drive_fr: 2
+pin_steer_fr: 0
+
+pin_drive_cl: 12
+pin_steer_cl: 15
+
+pin_drive_cr: 3
+pin_steer_cr: 1
+
+pin_drive_rl: 11
+pin_steer_rl: 9
+
+pin_drive_rr: 8
+pin_steer_rr: 10
+
+## PWM values
+# Those values highly depend on the motors and pwm board used
+# Check out the wiki for further explanation
+
+# PWM values for the neutral steering position
+
+steer_pwm_neutral_fl: 4536
+steer_pwm_neutral_fr: 4456
+steer_pwm_neutral_cl: 4386
+steer_pwm_neutral_cr: 4331
+steer_pwm_neutral_rl: 4681
+steer_pwm_neutral_rr: 4521
+
+# PWW range around steering neutral position
+steer_pwm_range: 5734
+
+# PWM value for the stop position of driving motors
+drive_pwm_neutral: 4915
+
+# PWW range around driving neutral position
+drive_pwm_range: 5734
