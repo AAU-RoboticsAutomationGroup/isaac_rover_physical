@@ -66,4 +66,4 @@ These commands switch between the two environments on the system.
 For controlling the robot wirelessly, we have used SSH to control and program the rover. The Eduroam AAU network does not allow communication directly between devices however. We have used a free VPN called tailscale. We strongly recommend using this, as you can share the device, such that all group members can access it. 
 
 # Other questions
-For other questions, contact Jacob at jknuds19@student.aau.dk
+For other questions, contact Anton, Emil or Jacob at abmo19@student.aau.dk, etpe19@student.aau.dk or jknuds19@student.aau.dk
