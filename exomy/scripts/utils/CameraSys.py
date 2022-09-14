@@ -13,7 +13,7 @@ class Cameras:
         self.pipe = rs.pipeline() #Make a pipeline for the T265
         self.doLogging = False #Flag whether to log positions and motor values or not
         if self.doLogging:
-            f = open('/home/xavier/ExoMy_Software/exomy/scripts/utils/csv/Position.csv', 'w')
+            f = open('/home/xavier/isaac_rover_physical/exomy/scripts/utils/csv/Position.csv', 'w')
             self.writer = csv.writer(f)
         # Build config object and request pose data
         cfg = rs.config()
@@ -53,8 +53,13 @@ class Cameras:
         tf_cloud = self.TransCloud(pointcloud, 1)
         tf_cloud2 = self.TransCloud(pointcloud2, 2)
         tf_cloudSum = np.append(tf_cloud, tf_cloud2, axis=0)
-        points = self.key_points(torch.tensor(tf_cloudSum))               
-        elaps = time.perf_counter() - start
+        start_to_tensor = time.perf_counter()
+        points = self.key_points(torch.tensor(tf_cloudSum))   
+        end_to_tensor = time.perf_counter() - start_to_tensor
+                    
+                 
+        #elaps = time.perf_counter() - start
+        elaps = end_to_tensor
         return tf_cloudSum, RobotPos, RobotVel, RobotAcc, RobotRot, ang_vel, ang_acc, points, elaps
 
 

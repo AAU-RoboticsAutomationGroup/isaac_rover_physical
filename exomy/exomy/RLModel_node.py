@@ -11,7 +11,7 @@ import gym
 import math
 import time
 import numpy as np
-sys.path.append('/home/xavier/ExoMy_Software/exomy/scripts/utils')
+sys.path.append('/home/xavier/isaac_rover_physical/exomy/scripts/utils')
 import model as m
 class RLModelNode(Node):
     def __init__(self):
@@ -36,15 +36,15 @@ class RLModelNode(Node):
         #self.multiGoals = np.array([0, -3])#[[0.2, -3.13]]),[1.5, -0.57],[0.28, -2.9],[0.79, -1.02]])
         #self.multiGoals = np.array([[0.0, -1.0],[1.0, -1.0],[1.0, 0.0],[0.0, 0.0]])
         #self.goal = self.multiGoals[0]
-        # self.model = self.load_model('/home/xavier/ExoMy_Software/exomy/config/GUT_policy.pt')
-        # self.value = self.load_value('/home/xavier/ExoMy_Software/exomy/config/GUT_policy.pt')
+        # self.model = self.load_model('/home/xavier/isaac_rover_physical/exomy/config/GUT_policy.pt')
+        # self.value = self.load_value('/home/xavier/isaac_rover_physical/exomy/config/GUT_policy.pt')
         self.oldSteering = 0
         self.oldVelocity = 0
         cfg_ppo = PPO_DEFAULT_CONFIG.copy()
         self.policy = {"policy": m.StochasticActorHeightmap(self.observation_space, self.action_space, num_exteroception=1080, network_features=[256,160,128], encoder_features=[80,60], activation_function="leakyrelu"),
                         "value": None}
 
-        self.policy["policy"].load("/home/xavier/ExoMy_Software/exomy/config/GUT_policy.pt")
+        self.policy["policy"].load("/home/xavier/isaac_rover_physical/exomy/config/GUT_policy.pt")
 
         self.agent = PPO(models=self.policy,
             memory=None, 
@@ -71,7 +71,7 @@ class RLModelNode(Node):
 
             #self.get_logger().info('\tOwn Z Rot: {}'.format(msg.robot_rot[2]))
             #self.get_logger().info('\tHeading Difference: {}'.format(heading_diff))
-            self.get_logger().info('\tDistance to Target: {}'.format(target_dist))
+           # self.get_logger().info('\tDistance to Target: {}'.format(target_dist))
             #self.get_logger().info('\tGoal: {}'.format(self.goal))
             #self.get_logger().info('\tGoal Vector: {}'.format(self.multiGoals))
 
@@ -82,7 +82,9 @@ class RLModelNode(Node):
 
                 DepthInfo[0,2] = self.oldVelocity
                 DepthInfo[0,3] = self.oldSteering
+               
                 DepthInfo[0,4:1084] = torch.from_numpy(depth_data)
+                
                 
                 motorsCom = self.agent.policy.act(DepthInfo,inference=True)
                 # self.get_logger().info('\tLin Vel: {}'.format(motorsCom[0][0][0]))

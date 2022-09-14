@@ -7,11 +7,11 @@ import numpy as np
 import time
 import sys
 import message_filters
-sys.path.append('/home/xavier/ExoMy_Software/exomy/scripts/utils')
+sys.path.append('/home/xavier/isaac_rover_physical/exomy/scripts/utils')
 sys.path.append('/home/xavier/ros2_numpy')
 import ros2_numpy
 from CameraSys import Cameras
-
+import torch
 
 
 class Camera_node(Node):
@@ -58,10 +58,13 @@ class Camera_node(Node):
 
     def callback(self, data_cam1, data_cam2):
         try:
+           
             start = time.perf_counter()
+            self.get_logger().info('\tRecived camera data new')
+            start_numpify = time.perf_counter()
             pc1 = ros2_numpy.numpify(data_cam1)
             pc2 = ros2_numpy.numpify(data_cam2)
-
+            end_numpify = time.perf_counter() - start_numpify
             points=np.zeros((pc1.shape[0],3))
             points[:,0]=pc1['x']
             points[:,1]=pc1['y']
@@ -77,8 +80,9 @@ class Camera_node(Node):
 
             pcnp = np.insert(pcnp, pcnp.shape[1], 1, axis=1)
             pcnp2 = np.insert(pcnp2, pcnp2.shape[1], 1, axis=1)
-
-            points, Robotpos, RobotVel, RobotAcc, RobotRot, ang_vel, ang_acc, keypoints, elaps  = self.camera.callback(pcnp, pcnp2)
+            start_transformation = time.perf_counter()
+            points, Robotpos, RobotVel, RobotAcc, RobotRot, ang_vel, ang_acc, keypoints, elaps  = self.camera.callback(pcnp, pcnp2) ### 0.14s - 0.294s
+            end_transformation = time.perf_counter() - start_transformation
             
             dataMsg = CameraData()
             dataMsg.robot_pos = Robotpos.tolist()
@@ -86,9 +90,11 @@ class Camera_node(Node):
             dataMsg.robot_acc = RobotAcc.tolist()
             dataMsg.robot_rot = RobotRot.tolist()
             
+            start_message = time.perf_counter()
+            torch.cuda.synchronize()
             #detach keypoints from tensor to numpy
-            keypoints = keypoints.cpu().detach().numpy()
-            
+            keypoints = keypoints.cpu().numpy()
+            end_message = time.perf_counter() - start_message
            
             #Print robot tracking data
             #self.get_logger().info('\tKeyPoints: {}'.format(keypoints))
@@ -136,7 +142,19 @@ class Camera_node(Node):
 
             
             dataMsg.depth_data = keypoints
+            
+
+            start_publish = time.perf_counter()
             self.pub.publish(dataMsg)
+            end_publish = time.perf_counter() - start_publish
+            
+            end = time.perf_counter()- start
+            # self.get_logger().info('\tTime transformation: {}'.format(end_transformation))
+            # self.get_logger().info('\tTime numpify : {}'.format(end_numpify))
+            # self.get_logger().info('\tTime message : {}'.format(end_message))
+            # self.get_logger().info('\tTime publish : {}'.format(end_publish))
+            # self.get_logger().info('\tTime to tensor : {}'.format(elaps))
+            # self.get_logger().info('\tTime camera node - transformation : {}'.format(end))
 
         except Exception as e: 
            self.get_logger().info('\tERROR: {}'.format(e))

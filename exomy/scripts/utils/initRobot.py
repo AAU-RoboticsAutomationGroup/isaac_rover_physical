@@ -14,7 +14,7 @@ class Rover():
     def __init__(self, config_filename):
         self.doLogging = True
         if self.doLogging:
-            f = open('/home/xavier/ExoMy_Software/exomy/scripts/utils/csv/MotorCommands.csv', 'w')
+            f = open('/home/xavier/isaac_rover_physical/exomy/scripts/utils/csv/MotorCommands.csv', 'w')
             self.writer = csv.writer(f)
         self.i2c_bus = busio.I2C(SCL, SDA)
         self.module = PCA9685(self.i2c_bus)

@@ -4,7 +4,7 @@ import os
 from adafruit_pca9685 import PCA9685
 from board import SCL, SDA
 import busio
-config_filename = '/home/xavier/ExoMy_Software/exomy/config/exomy.yaml'
+config_filename = '/home/xavier/isaac_rover_physical/exomy/config/exomy.yaml'
 
 
 def get_driving_pins():
