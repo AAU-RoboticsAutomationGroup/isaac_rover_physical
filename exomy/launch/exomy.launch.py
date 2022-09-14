@@ -50,19 +50,11 @@ def generate_launch_description():
         namespace=namespace_,
         output='screen'
     )
-    model = Node(
-        package='exomy',
-        executable='RLModel_node',
-        name='RLModel_node',
-        namespace=namespace_,
-        output='screen'
-    )
     
     return LaunchDescription([
         camera,
         #joy,
         #gamepad,  
         kinematics,
-        motors,
-        model
+        motors
     ])

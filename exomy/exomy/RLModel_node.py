@@ -135,26 +135,6 @@ class RLModelNode(Node):
         model.load_state_dict(checkpoint["state_dict"])
 
 
-
-    # def load_model(self, model_name, features=[256,160,128]):
-    #     observation_space = self.observation_space
-    #     action_space = self.action_space
-    #     model = m.StochasticActorHeightmap(observation_space=observation_space, action_space=action_space, network_features=features, activation_function="relu")
-    #     checkpoint = torch.load(model_name)
-    #     # model.load_state_dict(checkpoint['state_dict'])
-    #     model.eval()
-    #     model.cuda()
-    #     return model
-
-    # def load_value(self, model_name, features=[128,64]):
-    #     observation_space = self.observation_space
-    #     action_space = self.action_space
-    #     model = m.DeterministicActor(observation_space=observation_space, action_space=action_space, features=features, activation_function="relu")
-    #     checkpoint = torch.load(model_name)
-    #     # model.load_state_dict(checkpoint['state_dict'])
-    #     # model.eval()
-    #     #model.cuda()
-    #     return model
     def square(self, var):
         return var*var
 

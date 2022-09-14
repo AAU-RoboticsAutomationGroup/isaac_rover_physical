@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rclpy
 from rclpy.node import Node
-from exomy_msgs.msg import CameraData
+from exomy_msgs.msg import CameraData, Actions
 from sensor_msgs.msg import PointCloud2, PointCloud
 import numpy as np
 import time
@@ -11,7 +11,9 @@ sys.path.append('/home/xavier/isaac_rover_physical/exomy/scripts/utils')
 sys.path.append('/home/xavier/ros2_numpy')
 import ros2_numpy
 from CameraSys import Cameras
+from reinforcementLearning import RLModel
 import torch
+import math
 
 
 class Camera_node(Node):
@@ -23,13 +25,13 @@ class Camera_node(Node):
         
         
         
-
+        
         """Init Node."""
         self.node_name = 'Camera_node'
         super().__init__(self.node_name)
         self.pub = self.create_publisher( #Heightmap publisher
-                CameraData,
-                'CameraData',
+                Actions,
+                'Actions',
                 1)
         self.pointpub = self.create_publisher( #Publisher for visualizing pointcloud in Rviz
                 PointCloud,
@@ -53,8 +55,40 @@ class Camera_node(Node):
         
         self.get_logger().info('\t{} STARTED.'.format(self.node_name.upper()))
       
-        
-       
+        # Varibles for storing previous output of the system
+        self.policy = RLModel()
+    def square(self, var):
+        return var*var   
+
+    def create_states(self, robot_pos, keypoints):
+            direction_vector = np.zeros((2,))
+            direction_vector[0] = math.cos(robot_pos[2] - (math.pi/2)) # x value
+            direction_vector[1] = math.sin(robot_pos[2] - (math.pi/2)) # y value
+            goal_vec = self.policy.goal - np.array([robot_pos[0], robot_pos[1]])
+
+            heading_diff = math.atan2(goal_vec[0] * direction_vector[1] - goal_vec[1] * direction_vector[0], goal_vec[0] * direction_vector[0] + goal_vec[1] * direction_vector[1])
+            target_dist = math.sqrt(self.square(self.policy.goal - [robot_pos[0], robot_pos[1]]).sum(-1))
+
+            ## proprioceptive 
+
+            #keypoints = np.delete(keypoints, 0, 1)
+            #keypoints = np.delete(keypoints, 0, 1)
+            #keypoints = keypoints.squeeze()
+            keypoints = keypoints[:,2]
+            #keypoints = keypoints.flatten()
+
+            ## Exteroceptive
+            
+            ## Combine
+            states = torch.zeros((1,1084))
+            states[0,0] = target_dist/4
+            states[0,1] = heading_diff/3
+
+            states[0,2] = self.policy.oldVelocity
+            states[0,3] = self.policy.oldSteering
+            
+            states[0,4:1084] = keypoints
+            return states
 
     def callback(self, data_cam1, data_cam2):
         try:
@@ -83,27 +117,18 @@ class Camera_node(Node):
             start_transformation = time.perf_counter()
             points, Robotpos, RobotVel, RobotAcc, RobotRot, ang_vel, ang_acc, keypoints, elaps  = self.camera.callback(pcnp, pcnp2) ### 0.14s - 0.294s
             end_transformation = time.perf_counter() - start_transformation
-            
-            dataMsg = CameraData()
-            dataMsg.robot_pos = Robotpos.tolist()
-            dataMsg.robot_vel = RobotVel.tolist()
-            dataMsg.robot_acc = RobotAcc.tolist()
-            dataMsg.robot_rot = RobotRot.tolist()
-            
-            start_message = time.perf_counter()
-            torch.cuda.synchronize()
-            #detach keypoints from tensor to numpy
-            keypoints = keypoints.cpu().numpy()
-            end_message = time.perf_counter() - start_message
-           
-            #Print robot tracking data
-            #self.get_logger().info('\tKeyPoints: {}'.format(keypoints))
-            #self.get_logger().info('\tRobot Rotation: {}'.format(RobotRot))
-            #self.get_logger().info('\tRobot Angular Velocity: {}'.format(ang_vel))
-            #self.get_logger().info('\tRobot Angular Acceleration: {}'.format(ang_acc))
-            
+            #self.get_logger().info('\tFormatOfList: {}'.format(keypoints.shape))
+            start = time.perf_counter()
 
+            # Create state vector
+            states = self.create_states(Robotpos, keypoints)
+           # self.get_logger().info('\tFormatOfList: {}'.format(states.shape))
 
+            # Get action 
+            action = self.policy.get_action(states)
+
+            # Publish action
+            self.pub.publish(action)
 
             #Comment in the next section to be able to publish all point cloud data to ROS, to visualize it in Rviz
             #  
@@ -117,8 +142,7 @@ class Camera_node(Node):
             # PointCloudTrans.header = data_cam1.header
             # self.pointpub.publish(PointCloudTrans)
 
-            
-
+  
             
             #Comment in the next section to be able to publish all keypoint data to ROS, to visualize it in Rviz
             #
@@ -135,19 +159,12 @@ class Camera_node(Node):
             # self.Keypointpub.publish(SampledPointCloudTrans)
             
             
-            keypoints = np.delete(keypoints, 0, 1)
-            keypoints = np.delete(keypoints, 0, 1)
-            
-            keypoints = keypoints.flatten().tolist()
 
-            
-            dataMsg.depth_data = keypoints
-            
 
             start_publish = time.perf_counter()
-            self.pub.publish(dataMsg)
-            end_publish = time.perf_counter() - start_publish
             
+            end_publish = time.perf_counter() - start_publish
+        
             end = time.perf_counter()- start
             # self.get_logger().info('\tTime transformation: {}'.format(end_transformation))
             # self.get_logger().info('\tTime numpify : {}'.format(end_numpify))
@@ -155,10 +172,12 @@ class Camera_node(Node):
             # self.get_logger().info('\tTime publish : {}'.format(end_publish))
             # self.get_logger().info('\tTime to tensor : {}'.format(elaps))
             # self.get_logger().info('\tTime camera node - transformation : {}'.format(end))
+            #self.get_logger().info('\tFormatOfList: {}'.format(type(keypoints)))
 
         except Exception as e: 
            self.get_logger().info('\tERROR: {}'.format(e))
 
+        
 def main(args=None):
     rclpy.init(args=args)
 
