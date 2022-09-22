@@ -1,6 +1,11 @@
 # ExoMy - Software Repository
 Repository for the ROS software that runs on the AAU modified ExoMy Rover.
-This version of the system runs on a NVIDIA Xavier, using Ubuntu 20.04, jetpack 5.0 and ROS Foxy
+
+This version of the system runs on a NVIDIA Xavier, using Ubuntu 20.04, jetpack 5.0 and ROS Foxy.
+
+![space_rover](https://user-images.githubusercontent.com/10414639/191828909-85940ba7-ba86-4ce1-a9d4-1935cab395c0.png) ![cad_model_rover](https://user-images.githubusercontent.com/10414639/191828635-1847e5da-2ec3-4514-8d83-937bd631fd72.png)
+
+
 
 To launch the camera nodes, open 2 terminals and run each of these lines:
 ```
@@ -43,14 +48,14 @@ RL node
 Kinematics node
 Motor node
 ```
-The nodes are located in ~/ExoMy_Software/exomy
+The nodes are located in `~/ExoMy_Software/exomy`
 
-The nodes are written in python, and have supportive scripts located in ~/ExoMy_Software/scripts/utils
+The nodes are written in python, and have supportive scripts located in `~/ExoMy_Software/scripts/utils`
 
 Further is nodes called joy and gamepad_parser, these are for controlling the rover with a controller, but is disabled at default.
-If you wish to include these, edit the launch file located at ~/ExoMy_Software/launch/exomy.launch.py
+If you wish to include these, edit the launch file located at `~/ExoMy_Software/launch/exomy.launch.py`
 
-When making changes to either the nodes or subscripts, the ROS system has to be recompiled, do this by opening a terminal in ~/ExoMy_Software and running:
+When making changes to either the nodes or subscripts, the ROS system has to be recompiled, do this by opening a terminal in `~/ExoMy_Software` and running:
 ```
 colcon build
 ```
@@ -66,4 +71,8 @@ These commands switch between the two environments on the system.
 For controlling the robot wirelessly, we have used SSH to control and program the rover. The Eduroam AAU network does not allow communication directly between devices however. We have used a free VPN called tailscale. We strongly recommend using this, as you can share the device, such that all group members can access it. 
 
 # Other questions
-For other questions, contact Anton, Emil or Jacob at abmo19@student.aau.dk, etpe19@student.aau.dk or jknuds19@student.aau.dk
+For other questions, contact 
+
+- Anton: abmo19@student.aau.dk
+- Emil: etpe19@student.aau.dk
+- Jacob: jknuds19@student.aau.dk
